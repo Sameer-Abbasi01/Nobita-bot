@@ -1,104 +1,119 @@
-module.exports = {
-  config: {
+/**
+* @author Zeeshan Altaf
+* @warn Do not edit code or edit credits
+* @Dont Change This Credits Otherwisw Your Bot Lol
+*/
+const fs = require('fs');
+const ytdl = require('ytdl-core');
+const { resolve } = require('path');
+async function downloadMusicFromYoutube(link, path) {
+  var timestart = Date.now();
+  if(!link) return 'Thiếu link'
+  var resolveFunc = function () { };
+  var rejectFunc = function () { };
+  var returnPromise = new Promise(function (resolve, reject) {
+    resolveFunc = resolve;
+    rejectFunc = reject;
+  });
+    ytdl(link, {
+            filter: format =>
+                format.quality == 'tiny' && format.audioBitrate == 48 && format.hasAudio == true
+        }).pipe(fs.createWriteStream(path))
+        .on("close", async () => {
+            var data = await ytdl.getInfo(link)
+            var result = {
+                title: data.videoDetails.title,
+                dur: Number(data.videoDetails.lengthSeconds),
+                viewCount: data.videoDetails.viewCount,
+                likes: data.videoDetails.likes,
+                author: data.videoDetails.author.name,
+                timestart: timestart
+            }
+            resolveFunc(result)
+        })
+  return returnPromise
+}
+module.exports.config = {
     name: "music",
-    version: "1.0",
-    role: 0,
-    author: "Shikaki, Modified By Priyanshi Kaur",
-    cooldowns: 4,
-    shortDescription: "Play Song / Download By Name Or Link",
-    category: "Music",
-    usages: "(.sing Sing Name) (.sing Yt Song URL)",
-    dependencies: {
-      "fs-extra": "",
-      "request": "",
-      "axios": "",
-      "ytdl-core": "",
-      "yt-search": ""
-    }
-  },
-
-  onStart: async ({ api, event }) => {
-    const axios = require("axios");
-    const fs = require("fs-extra");
-    const ytdl = require("ytdl-core");
-    const yts = require("yt-search");
-
-    const input = event.body;
-    const data = input.split(" ");
-
-    if (data.length < 2) {
-      return api.sendMessage("Please write music name", event.threadID);
-    }
-
-    data.shift();
-    const song = data.join(" ");
-
-    try {
-      api.sendMessage(`🌐 | Searching Lyrics and Music for "${song}".\n♻ | Please Wait...🖤`, event.threadID);
-
-      // Fetch lyrics and song details
-      const lyricsResponse = await axios.get(`https://globalapis.onrender.com/api/lyrics?songName=${encodeURIComponent(song)}`);
-      const lyrics = lyricsResponse.data.lyrics || "Not found!";
-      const title = lyricsResponse.data.title || "Not found!";
-      const artist = lyricsResponse.data.artist || "Not found!";
-      const songImage = lyricsResponse.data.image || "";
-
-      // Fetch song details from vmam-docs
-      const songResponse = await axios.get(`https://vmam-docs.onrender.com/vmam/apis?yt=${encodeURIComponent(song)}&type=song`);
-      const songUrl = songResponse.data.url;
-
-      if (!songUrl) {
-        return api.sendMessage("Error: Song not found.", event.threadID, event.messageID);
-      }
-
-      // Download the song
-      const stream = ytdl(songUrl, { filter: "audioonly" });
-      const fileName = `${event.senderID}.mp3`;
-      const filePath = __dirname + `/cache/${fileName}`;
-      stream.pipe(fs.createWriteStream(filePath));
-
-      stream.on('response', () => {
-        console.info('[DOWNLOADER]', 'Starting download now!');
-      });
-
-      stream.on('info', (info) => {
-        console.info('[DOWNLOADER]', `Downloading ${info.videoDetails.title} by ${info.videoDetails.author.name}`);
-      });
-
-      stream.on('end', async () => {
-        console.info('[DOWNLOADER] Downloaded');
-
-        if (fs.statSync(filePath).size > 26214400) {
-          fs.unlinkSync(filePath);
-          return api.sendMessage('[ERR] The file could not be sent because it is larger than 25MB.', event.threadID);
-        }
-
-        // Send message with lyrics, artist, title, song image, and audio
-        const message = {
-          body: `🪩Title: ${title}\n🎩Artist: ${artist}\n\n🧾Lyrics: ${lyrics}`,
-          attachment: [fs.createReadStream(filePath)]
-        };
-
-        if (songImage) {
-          const imgStream = await axios.get(songImage, { responseType: 'stream' });
-          const imgPath = __dirname + `/cache/${event.senderID}.jpg`;
-          imgStream.data.pipe(fs.createWriteStream(imgPath)).on('close', () => {
-            message.attachment.push(fs.createReadStream(imgPath));
-            api.sendMessage(message, event.threadID, () => {
-              fs.unlinkSync(filePath);
-              fs.unlinkSync(imgPath);
-            });
-          });
-        } else {
-          api.sendMessage(message, event.threadID, () => {
-            fs.unlinkSync(filePath);
-          });
-        }
-      });
-
-    } catch (error) {
-      console.error('[ERROR]', error);
-      api.sendMessage('Please try again later. An error occurred.', event.threadID);
-    }
-  }
+    version: "1.0.0",
+    hasPermssion: 0,
+    credits: "D-Jukie",
+    description: "Phát nhạc thông qua link YouTube hoặc từ khoá tìm kiếm",
+    commandCategory: "music",
+    usages: "[searchMusic]",
+    cooldowns: 0
 };
+
+module.exports.handleReply = async function ({ api, event, handleReply }) {
+    const axios = require('axios')
+    const { createReadStream, unlinkSync, statSync } = require("fs-extra")
+    try {
+        var path = `${__dirname}/cache/1.mp3`
+        var data = await downloadMusicFromYoutube('https://www.youtube.com/watch?v=' + handleReply.link[event.body -1], path);
+        if (fs.statSync(path).size > 26214400) return api.sendMessage('aby oye chikny ye bot 259mb ke file he genrate krta hai itna lamba song baji ke shady par legya ga lol       𒁍 ⟬  ‣⃟ ⃝𑁍𓆪᭄ 達 ⟭ ꪹ 爾 ᯽⸺›⁐‡𖣴‣ ⸨⸙⸩', event.threadID, () => fs.unlinkSync(path), event.messageID);
+        api.unsendMessage(handleReply.messageID)
+        return api.sendMessage({ 
+		body: `🎵 Title: ${data.title}\n🎶 Name Channel : ${data.author}\n⏱️ Time: ${this.convertHMS(data.dur)}\n👀 Views: ${data.viewCount}\n🥰 Likes: ${data.likes}\n⏱️Processing time: ${Math.floor((Date.now()- data.timestart)/1000)} second\n    
+      𒁍 ⟬ 𓆪᭄ 達 ⟭ ꪹ 爾 ᯽⸺›⁐‡𖣴‣ ⸨⸙⸩`,
+            attachment: fs.createReadStream(path)}, event.threadID, ()=> fs.unlinkSync(path), 
+         event.messageID)
+            
+    }
+    catch (e) { return console.log(e) }
+}
+module.exports.convertHMS = function(value) {
+    const sec = parseInt(value, 10); 
+    let hours   = Math.floor(sec / 3600);
+    let minutes = Math.floor((sec - (hours * 3600)) / 60); 
+    let seconds = sec - (hours * 3600) - (minutes * 60); 
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return (hours != '00' ? hours +':': '') + minutes+':'+seconds;
+}
+module.exports.run = async function ({ api, event, args }) {
+    if (args.length == 0 || !args) return api.sendMessage('aby chikny idher  song ka name b likh lol                                       達 ⟭ ꪹ 爾 ᯽⸺›⁐‡𖣴', event.threadID, event.messageID);
+    const keywordSearch = args.join(" ");
+    var path = `${__dirname}/cache/1.mp3`
+    if (fs.existsSync(path)) { 
+        fs.unlinkSync(path)
+    }
+    if (args.join(" ").indexOf("https://") == 0) {
+        try {
+            var data = await downloadMusicFromYoutube(args.join(" "), path);
+            if (fs.statSync(path).size > 26214400) return api.sendMessage('aby oye chikny ye bot 259mb ke file he genrate krta hai itna lamba song baji ke shady par legya ga lol      ', event.threadID, () => fs.unlinkSync(path), event.messageID);
+            return api.sendMessage({ 
+                body: `🎵 Title: ${data.title}\n🎶 Name Channel 🌸: ${data.author}\n⏱️ Time: ${this.convertHMS(data.dur)}\n👀 Views: ${data.viewCount}\n👍 Likes: ${data.likes}\n⏱️ Processing time: ${Math.floor((Date.now()- data.timestart)/1000)} second\n         
+    `,
+                attachment: fs.createReadStream(path)}, event.threadID, ()=> fs.unlinkSync(path), 
+            event.messageID)
+            
+        }
+        catch (e) { return console.log(e) }
+    } else {
+          try {
+            var link = [],
+                msg = "",
+                num = 0
+            const Youtube = require('youtube-search-api');
+            var data = (await Youtube.GetListByKeyword(keywordSearch, false,6)).items;
+            for (let value of data) {
+              link.push(value.id);
+              num = num+=1
+              msg += (`${num} - ${value.title} (${value.length.simpleText})\n\n`);
+            }
+            var body = `Ya la bro ya song list hai is mein ${link.length} song han :\n\n${msg}jo song ap ko chyia reply mein us song ka figure likho                   `
+            return api.sendMessage({
+              body: body
+            }, event.threadID, (error, info) => global.client.handleReply.push({
+              type: 'reply',
+              name: this.config.name,
+              messageID: info.messageID,
+              author: event.senderID,
+              link
+            }), event.messageID);
+          } catch(e) {
+            return api.sendMessage('Lol dubra kooshih kar\n ' + e, event.threadID, event.messageID);
+        }
+    }
+              }
