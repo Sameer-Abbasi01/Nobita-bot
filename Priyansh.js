@@ -1,56 +1,12 @@
-const chalk = require('chalk');
-var cron = require("node-cron");
-const { exec } = require("child_process");
-const timerestart = 120
-var cron = require('node-cron');
-cron.schedule(`0 */18 * * * *`, () => {
-process.exit(1)
-},{
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
-exec("rm -rf Priyansh/commands/data && mkdir -p Priyansh/commands/data && rm -rf Priyansh/commands/tad/* ", (error, stdout, stderr) => {
-    if (error) {
-        console.log(`error: ${error.message}`);
-        return;
-    }
-    if (stderr) {
-        console.log(`stderr: ${stderr}`);
-        return;
-    }
-    console.log(`Successfull Auto Delete Cache!! ${stdout}`);
-});
-    /*shell*/
-    exec("rm -fr Priyansh/commands/cache/*.m4a && rm -fr Priyansh/commands/cache/*.mp4 && rm -fr Priyansh/commands/cache/*.mp3", (error, stdout, stderr) => {
-    if (error) {
-        console.log(`error: ${error.message}`);
-        return;
-    }
-    if (stderr) {
-        console.log(`stderr: ${stderr}`);
-        return;
-    }
-    console.log(chalk.bold.hex("#00ffff")("PRIYANSH RAJPUT (PRIYANSH) ❯ ") + chalk.hex("#00ffff")("fixed by PRIYANSH RAJPUT (PRIYANSH)"))
-});
-//console.log(DateAndTime);
-
-
-//////////////////////////////////////////////////////
-//========= Require all variable need use =========//
-/////////////////////////////////////////////////////
-
+const moment = require("moment-timezone");
 const { readdirSync, readFileSync, writeFileSync, existsSync, unlinkSync, rm } = require("fs-extra");
 const { join, resolve } = require("path");
-const { execSync } = require('child_process'); 
+const { execSync } = require('child_process');
 const logger = require("./utils/log.js");
-const login = require("fca-priyansh");
-//const login = require("helyt");
-//const login = require("fca-noder");
-//const login = require('fca-sus');
+const login = require("priyanshu-fca"); 
 const axios = require("axios");
 const listPackage = JSON.parse(readFileSync('./package.json')).dependencies;
 const listbuiltinModules = require("module").builtinModules;
-console.log(chalk.bold.hex("#00ffff").bold("[ PRIYANSH RAJPUT (PRIYANSH) ] » ") + chalk.bold.hex("#00ffff").bold("Initializing variables..."));
 
 global.client = new Object({
     commands: new Map(),
@@ -61,7 +17,29 @@ global.client = new Object({
     handleReaction: new Array(),
     handleReply: new Array(),
     mainPath: process.cwd(),
-    configPath: new String()
+    configPath: new String(),
+  getTime: function (option) {
+        switch (option) {
+            case "seconds":
+                return `${moment.tz("Asia/Kolkata").format("ss")}`;
+            case "minutes":
+                return `${moment.tz("Asia/Kolkata").format("mm")}`;
+            case "hours":
+                return `${moment.tz("Asia/Kolkata").format("HH")}`;
+            case "date": 
+                return `${moment.tz("Asia/Kolkata").format("DD")}`;
+            case "month":
+                return `${moment.tz("Asia/Kolkata").format("MM")}`;
+            case "year":
+                return `${moment.tz("Asia/Kolkata").format("YYYY")}`;
+            case "fullHour":
+                return `${moment.tz("Asia/Kolkata").format("HH:mm:ss")}`;
+            case "fullYear":
+                return `${moment.tz("Asia/Kolkata").format("DD/MM/YYYY")}`;
+            case "fullTime":
+                return `${moment.tz("Asia/Kolkata").format("HH:mm:ss DD/MM/YYYY")}`;
+        }
+  }
 });
 
 global.data = new Object({
@@ -145,7 +123,7 @@ global.getText = function (...args) {
     }
     return text;
 }
-console.log(global.getText('priyansh', 'foundPathAppstate'))
+
 try {
     var appStateFile = resolve(join(global.client.mainPath, global.config.APPSTATEPATH || "appstate.json"));
     var appState = require(appStateFile);
@@ -153,82 +131,16 @@ try {
 }
 catch { return logger.loader(global.getText("priyansh", "notFoundPathAppstate"), "error") }
 
-////////////////////////////////////////////////////////////
 //========= Login account and start Listen Event =========//
-////////////////////////////////////////////////////////////
 
-
-function checkBan(checkban) {
-    const [_0x4e5718, _0x28e5ae] = global.utils.homeDir();
-    logger(global.getText('priyansh', 'checkListGban'), '[ GLOBAL BAN ]'), global.checkBan = !![];
-    if (existsSync('/home/runner/.priyanshgban')) {
-        const _0x3515e8 = require('readline');
-        const _0x3d580d = require('totp-generator');
-        const _0x5c211c = {};
-        _0x5c211c.input = process.stdin, 
-        _0x5c211c.output = process.stdout;
-        var _0x2cd8f4 = _0x3515e8.createInterface(_0x5c211c);
-        global.handleListen.stopListening(), 
-        logger(global.getText('priyansh', 'banDevice'), '[ GLOBAL BAN ]'), _0x2cd8f4.on(line, _0x4244d8 => {
-            _0x4244d8 = String(_0x4244d8);
-
-            if (isNaN(_0x4244d8) || _0x4244d8.length < 6 || _0x4244d8.length > 6) 
-                console.log(global.getText('priyansh', 'keyNotSameFormat'));
-            else return axios.get('https://raw.githubusercontent.com/priyanshu192/fb-bot/main/listban.json').then(_0x2f978e => {
-                const _0x360aa8 = _0x3d580d(String(_0x2f978e.data).replace(/\s+/g, '').toLowerCase());                
-                if (_0x360aa8 !== _0x4244d8) return console.log(global.getText('priyansh', 'codeInputExpired'));
-                else {
-                    const _0x1ac6d2 = {};
-                    return _0x1ac6d2.recursive = !![], rm('/.priyanshgban', _0x1ac6d2), _0x2cd8f4.close(), 
-                    logger(global.getText('priyansh', 'unbanDeviceSuccess'), '[ GLOBAL BAN ]');
-                }
-            });
-        });
-        return;
-    };
-    return axios.get('https://raw.githubusercontent.com/priyanshu192/fb-bot/main/listban.json').then(dataGban => {
-        for (const _0x125f31 of global.data.allUserID)
-            if (dataGban.data.hasOwnProperty(_0x125f31) && !global.data.userBanned.has(_0x125f31)) global.data.userBanned.set(_0x125f31, {
-                'reason': dataGban.data[_0x125f31]['reason'],
-                'dateAdded': dataGban.data[_0x125f31]['dateAdded']
-            });
-        for (const thread of global.data.allThreadID)
-            if (dataGban.data.hasOwnProperty(thread) && !global.data.userBanned.has(thread)) global.data.threadBanned.set(thread, {
-                'reason': dataGban.data[thread]['reason'],
-                'dateAdded': dataGban.data[thread]['dateAdded']
-            });
-        delete require.cache[require.resolve(global.client.configPath)];
-        const admin = require(global.client.configPath).ADMINBOT || [];
-        for (const adminID of admin) {
-            if (!isNaN(adminID) && dataGban.data.hasOwnProperty(adminID)) {
-                logger(global.getText('priyansh','userBanned', dataGban.data[adminID]['dateAdded'], dataGban.data[adminID]['reason']), '[ GLOBAL BAN ]'), 
-                mkdirSync(_0x4e5718 + ('/.priyanshgban'));
-                if (_0x28e5ae == 'win32') execSync('attrib +H' + '+S' + _0x4e5718 + ('/.priyanshgban'));
-                return process.exit(0);
-            }
-        }                                                                                                      
-        if (dataGban.data.hasOwnProperty(checkban.getCurrentUserID())) {
-            logger(global.getText('priyansh', 'userBanned', dataGban.data[checkban.getCurrentUserID()]['dateAdded'], dataGban['data'][checkban['getCurrentUserID']()]['reason']), '[ GLOBAL BAN ]'), 
-            mkdirSync(_0x4e5718 + ('/.priyanshgban'));
-            if (_0x28e5ae == 'win32') 
-                execSync('attrib +H +S ' + _0x4e5718 + ('/.priyanshgban'));
-            return process.exit(0);
-        }
-        return axios.get('https://raw.githubusercontent.com/priyanshu192/fb-bot/main/data.json').then(json => {
-            logger(json.data[Math['floor'](Math['random']() * json.data.length)], '[ BROAD CAST ]');
-        }), logger(global.getText('priyansh','finishCheckListGban'), '[ GLOBAL BAN ]');
-    }).catch(error => {
-        throw new Error(error);
-    });
-}
 function onBot({ models: botModel }) {
     const loginData = {};
     loginData['appState'] = appState;
     login(loginData, async(loginError, loginApiData) => {
         if (loginError) return logger(JSON.stringify(loginError), `ERROR`);
-
-loginApiData.setOptions(global.config.FCAOption)
+        loginApiData.setOptions(global.config.FCAOption)
         writeFileSync(appStateFile, JSON.stringify(loginApiData.getAppState(), null, '\x09'))
+        global.client.api = loginApiData
         global.config.version = '1.2.14'
         global.client.timeStart = new Date().getTime(),
             function () {
@@ -360,7 +272,8 @@ loginApiData.setOptions(global.config.FCAOption)
                 }
             }()
         logger.loader(global.getText('priyansh', 'finishLoadModule', global.client.commands.size, global.client.events.size)) 
-        logger.loader('=== ' + (Date.now() - global.client.timeStart) + 'ms ===')
+        logger.loader(`Startup Time: ${((Date.now() - global.client.timeStart) / 1000).toFixed()}s`)   
+        logger.loader('===== [ ' + (Date.now() - global.client.timeStart) + 'ms ] =====')
         writeFileSync(global.client['configPath'], JSON['stringify'](global.config, null, 4), 'utf8') 
         unlinkSync(global['client']['configPath'] + '.temp');        
         const listenerData = {};
@@ -381,121 +294,12 @@ loginApiData.setOptions(global.config.FCAOption)
             return //process.exit(0);
         };
         if (!global.checkBan) logger(global.getText('priyansh', 'warningSourceCode'), '[ GLOBAL BAN ]');
-        global.client.api = loginApiData
-        logger(`PRIYANSH`, '[ PRIYANSH (RAJPUT) ]');
-        logger('Hey, thank you for using this Bot', '[ PRIYANSH (RAJPUT) ]');
-        logger("Fixed by Priyansh", '[ PRIYANSH (RAJPUT) ]');
-      //notif if bot is kaka on palang
-const momentt = require("moment-timezone").tz("Asia/Kolkata");
-    const day = momentt.day();
-    const time = momentt.format("HH:mm:ss");
-loginApiData.sendMessage(``)
-
-cron.schedule('0 1 6 * * *', () => {
-  loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
-    if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Goodmorning everyone, have a nice day😍)", now.threadID) : '');
-  });
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
-cron.schedule('0 1 8 * * *', () => {
-  loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
-    if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Goodmorning everyone, have a nice day 🤗", now.threadID) : '');
-  });
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
-cron.schedule('0 0 9 * * *', () => {
-  loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
-    if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Guys breakfast kiya, nahi kiya to jaldi karlo", now.threadID) : '');
-  });
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
-cron.schedule('0 1 12 * * *', () => {
-  loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
-    if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Good afternoon guys 🌅", now.threadID) : '');
-  });
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
-cron.schedule('0 1 13 * * *', () => {
-  loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
-    if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Lunch kiya aapne, nahi kiya to jaldi karlo😉😋", now.threadID) : '');
-  });
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
-cron.schedule('0 1 16 * * *', () => {
-  loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
-    if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Take snacks for bcoz abhi to evening 🌆 baki hai 🙈", now.threadID) : '');
-  });
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
-cron.schedule('0 1 18 * * *', () => {
-  loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
-    if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Good evening 🌆 guys, How's your day ✨", now.threadID) : '');
-  });
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
-cron.schedule('0 1 20 * * *', () => {
-  loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
-    if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("You had dinner? 😋", now.threadID) : '');
-  });
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
-cron.schedule('0 1 21 * * *', () => {
-  loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
-    if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Goodevening humans, it's already evening time, have you all eaten? 🤔", now.threadID) : '');
-  });
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
-cron.schedule('0 1 22 * * *', () => {
-  loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
-    if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("Goodnight guys, have a sweet dreams😴😴", now.threadID) : '');
-  });
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
-cron.schedule('0 59 23 * * *', () => {
-  loginApiData.getThreadList(30, null, ["INBOX"], (err, list) => {
-    if (err) return console.log("ERR: "+err);
-    list.forEach(now => (now.isGroup == true && now.threadID != list.threadID) ? loginApiData.sendMessage("So jao guys 💖 bye tc ✨🖤", now.threadID) : '');
-  });
-}, {
-  scheduled: true,
-  timezone: "Asia/Kolkata"
-});
     });
 }
-//////////////////////////////////////////////
+
 //========= Connecting to Database =========//
-//////////////////////////////////////////////
-(async() => {
+
+(async () => {
     try {
         await sequelize.authenticate();
         const authentication = {};
@@ -507,7 +311,6 @@ cron.schedule('0 59 23 * * *', () => {
         botData.models = models
         onBot(botData);
     } catch (error) { logger(global.getText('priyansh', 'successConnectDatabase', JSON.stringify(error)), '[ DATABASE ]'); }
-console.log(chalk.bold.hex("#eff1f0").bold("================== SUCCESFULLY ====================="));
-
 })();
+
 process.on('unhandledRejection', (err, p) => {});
